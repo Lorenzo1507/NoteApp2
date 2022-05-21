@@ -3,9 +3,11 @@ package br.senac.noteapp.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.Room
 import br.senac.noteapp.databinding.ActivityListNotesBinding
 import br.senac.noteapp.databinding.NoteBinding
-import br.senac.noteapp.models.NoteSingleton
+import br.senac.noteapp.models.AppDatabase
+import br.senac.noteapp.models.Note
 
 class ListNotesActivity : AppCompatActivity() {
     lateinit var binding: ActivityListNotesBinding
@@ -24,13 +26,29 @@ class ListNotesActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        refreshNotes()
+        Thread {
+
+        }.start()
+        list()
     }
 
-    fun refreshNotes() {
+    fun list() {
+        val db = Room
+            .databaseBuilder(this, AppDatabase::class.java, "AppDb")
+            .build()
+
+        val listNotes = db.noteDao().list()
+
+        runOnUiThread{
+            refreshUi(listNotes)
+        }
+
+    }
+
+    fun refreshUi(listNotes: List<Note>) {
         binding.container.removeAllViews()
 
-        NoteSingleton.noteList.forEach {
+        listNotes.forEach {
             val cardBinding = NoteBinding.inflate(layoutInflater)
 
             cardBinding.textTitle.text = it.title
